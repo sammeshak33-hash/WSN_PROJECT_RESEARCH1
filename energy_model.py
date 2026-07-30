@@ -6,16 +6,18 @@ from config import *
 def calculate_transmit_energy(packet_size, distance):
     """
     Calculate energy required to transmit a packet.
-    packet_size : bits
-    distance    : meters
     """
 
     if distance < D0:
-        energy = (packet_size * E_ELEC) + \
-                 (packet_size * EPSILON_FS * (distance ** 2))
+        energy = (
+            packet_size * E_ELEC
+            + packet_size * EPSILON_FS * (distance ** 2)
+        )
     else:
-        energy = (packet_size * E_ELEC) + \
-                 (packet_size * EPSILON_MP * (distance ** 4))
+        energy = (
+            packet_size * E_ELEC
+            + packet_size * EPSILON_MP * (distance ** 4)
+        )
 
     return energy
 
@@ -35,9 +37,6 @@ def calculate_receive_energy(packet_size):
 # Transmit packet
 # -------------------------------------------------------
 def transmit_packet(node, packet_size, distance):
-    """
-    Deduct transmission energy from node.
-    """
 
     energy = calculate_transmit_energy(packet_size, distance)
 
@@ -55,9 +54,6 @@ def transmit_packet(node, packet_size, distance):
 # Receive packet
 # -------------------------------------------------------
 def receive_packet(node, packet_size):
-    """
-    Deduct receiving energy from node.
-    """
 
     energy = calculate_receive_energy(packet_size)
 
@@ -83,21 +79,38 @@ def update_residual_energy(node):
 
 
 # -------------------------------------------------------
-# Print energy status
+# Print energy
 # -------------------------------------------------------
 def print_energy(node):
 
     print(
-        f"Node {node.id} | Energy = {node.energy:.6f} J | Alive = {node.alive}"
+        f"Node {node.id} | "
+        f"Energy = {node.energy:.6f} J | "
+        f"Alive = {node.alive}"
     )
 
+
+# -------------------------------------------------------
+# Initialize Energy
+# -------------------------------------------------------
 from config import INITIAL_ENERGY
+import random
+
 
 def initialize_energy(nodes):
     """
-    Initialize energy for all deployed nodes.
+    Initialize node energy according to attack behaviour.
     """
 
     for node in nodes:
-        node.energy = INITIAL_ENERGY
-        node.alive = True    
+
+        attack = getattr(node, "attack_type", "Normal")
+
+        if attack == "DoS":
+            # DoS nodes start with lower energy
+            node.energy = random.uniform(10, 25)
+
+        else:
+            node.energy = INITIAL_ENERGY
+
+        node.alive = True

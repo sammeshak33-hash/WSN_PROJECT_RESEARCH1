@@ -22,6 +22,11 @@ class SensorNode:
         self.neighbors = []
         self.distance_to_bs = 0
 
+        self.packet = 0
+        self.packet_delivered = 0
+        self.transmission_count = 0
+        self.packet_delivery_ratio = 1.0
+
 
 def deploy_nodes():
     nodes = []

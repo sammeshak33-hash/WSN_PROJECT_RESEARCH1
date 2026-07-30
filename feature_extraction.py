@@ -1,10 +1,10 @@
 import csv
-import random
 
 
 class FeatureExtraction:
 
     def __init__(self, nodes):
+
         self.nodes = nodes
         self.features = []
 
@@ -14,12 +14,6 @@ class FeatureExtraction:
 
         for node in self.nodes:
 
-            # Packet delivered only if packet was generated
-            # and the node is still alive.
-            packet_delivered = 1 if (
-                node.packet == 1 and node.alive
-            ) else 0
-
             feature = [
                 node.id,
                 round(node.energy, 4),
@@ -28,7 +22,8 @@ class FeatureExtraction:
                 round(node.total_trust, 4),
                 round(node.distance_to_bs, 4),
                 node.packet,
-                packet_delivered
+                node.packet_delivered,
+                node.attack_type
             ]
 
             self.features.append(feature)
@@ -37,12 +32,12 @@ class FeatureExtraction:
 
         print("\n========== Extracted Features ==========\n")
 
-        print("NodeID Energy DTrust ITrust TTrust DistBS Packet Delivered Attack")
+        print(
+            "NodeID Energy DTrust ITrust TTrust DistBS Packet Delivered Attack"
+        )
 
-        labels = self.inject_attacks()
-
-        for row, label in zip(self.features[:10], labels[:10]):
-            print(row + [label])
+        for row in self.features[:10]:
+            print(row)
 
     def save_dataset(self, filename="network_dataset.csv"):
 
@@ -64,47 +59,6 @@ class FeatureExtraction:
 
             writer.writerow(header)
 
-            labels = self.inject_attacks()
-
-            updated_features = []
-
-            for feature, label in zip(self.features, labels):
-                updated_features.append(feature + [label])
-
-            writer.writerows(updated_features)
+            writer.writerows(self.features)
 
         print(f"\nDataset saved as {filename}")
-
-    def inject_attacks(self):
-
-        labels = []
-
-        for node in self.nodes:
-
-            r = random.random()
-
-            if r < 0.70:
-
-                label = "Normal"
-
-            elif r < 0.80:
-
-                label = "Blackhole"
-
-                node.total_trust *= 0.30
-
-            elif r < 0.90:
-
-                label = "Grayhole"
-
-                node.total_trust *= 0.55
-
-            else:
-
-                label = "DoS"
-
-                node.energy *= 0.60
-
-            labels.append(label)
-
-        return labels    

@@ -15,6 +15,7 @@ from dataset_generator import DatasetGenerator
 
 from large_dataset_validation import LargeDatasetValidation
 from dataset_visualization import DatasetVisualization
+from preprocessing import Preprocessing
 
 from sklearn.metrics import (
     accuracy_score,
@@ -63,7 +64,25 @@ def main():
     visual.correlation_matrix()
 
     nodes = simulation_data["nodes"]
-    prep = simulation_data["prep"]
+
+    prep = Preprocessing("large_network_dataset.csv")
+
+    prep.separate_features()
+    prep.encode_labels()
+    prep.normalize()
+    prep.split_dataset()
+
+    prep.X_train = prep.X_train.reshape(
+        prep.X_train.shape[0],
+        prep.X_train.shape[1],
+        1
+    )
+
+    prep.X_test = prep.X_test.reshape(
+        prep.X_test.shape[0],
+        prep.X_test.shape[1],
+        1
+    )
 
 
     # ----------------------------
