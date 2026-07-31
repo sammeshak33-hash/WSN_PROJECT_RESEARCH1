@@ -27,6 +27,7 @@ from sklearn.metrics import (
 )
 import os
 import pandas as pd
+from hyperparameter_tuning import HyperparameterTuner
 
 def main():
 
@@ -140,218 +141,21 @@ def main():
 
 
 
+    print("\n====================================")
+    print("HYPERPARAMETER OPTIMIZATION")
+    print("====================================")
+
+    tuner = HyperparameterTuner()
+
+    best_configuration = tuner.run(prep)
+
+    print("\n====================================")
+    print("BEST CONFIGURATION")
+    print("====================================")
+
+    print(best_configuration)
+
    
-
-    # ==========================
-    # PRCNN Model
-    # ==========================
-
-    input_shape = (prep.X_train.shape[1], 1)
-
-    prcnn = PRCNN(
-        input_shape=input_shape,
-        num_classes=4
-    )
-
-    model = prcnn.build_model()
-
-    model.compile(
-        optimizer="adam",
-        loss="sparse_categorical_crossentropy",
-        metrics=["accuracy"]
-    )
-
-    print("\nPRCNN Model Compiled Successfully")
-
-    model.summary()
-
-    # ==========================
-    # PRCNN Model Training
-    # ==========================
-
-    print("\n==============================")
-    print("PRCNN Model Training Started")
-    print("==============================")
-
-    EPOCHS = 50
-    BATCH_SIZE = 32
-
-    history = model.fit(
-
-        prep.X_train,
-        prep.y_train,
-
-        validation_data=(
-            prep.X_test,
-            prep.y_test
-        ),
-
-        epochs=EPOCHS,
-
-        batch_size=BATCH_SIZE,
-
-        verbose=1
-
-    )
-    
-
-    print("\n==============================")
-    print("Training Completed Successfully")
-    print("==============================")
-    # ==========================================
-    # Save Model
-    # ==========================================
-
-    model.save("Models/prcnn_large_dataset.keras")
-
-    print("\nModel Saved Successfully")
-
-    # ==========================================
-    # Save Training History
-    # ==========================================
-
-    history_df = pd.DataFrame(history.history)
-
-    history_df.to_csv(
-        "Results/training_history.csv",
-        index=False
-    )
-
-    print("Training History Saved Successfully")
-
-    # ==========================
-    # PRCNN Model Testing
-    # ==========================
-
-    print("\n==============================")
-    print("Testing PRCNN Model")
-    print("==============================")
-
-    test_loss, test_accuracy = model.evaluate(
-        prep.X_test,
-        prep.y_test,
-        verbose=1
-    )
-
-    print("\nTest Loss :", round(test_loss, 4))
-    print("Test Accuracy :", round(test_accuracy * 100, 2), "%")
-
-    print("\n==============================")
-    print("FINAL RESULTS")
-    print("==============================")
-
-    print(
-        "Training Accuracy :",
-        round(history.history["accuracy"][-1] * 100, 2),
-        "%"
-    )
-
-    print(
-        "Validation Accuracy :",
-        round(history.history["val_accuracy"][-1] * 100, 2),
-        "%"
-    )
-
-    print(
-        "Testing Accuracy :",
-        round(test_accuracy * 100, 2),
-        "%"
-    )
-
-    # ==========================
-    # Predict Attack Classes
-    # ==========================
-
-    predictions = model.predict(prep.X_test)
-
-    predicted_classes = predictions.argmax(axis=1)
-
-    # ==========================
-    # Performance Evaluation
-    # ==========================
-
-    print("\n==============================")
-    print("Performance Evaluation")
-    print("==============================")
-
-    accuracy = accuracy_score(
-        prep.y_test,
-        predicted_classes
-    )
-
-    precision = precision_score(
-        prep.y_test,
-        predicted_classes,
-        average="weighted"
-    )
-
-    recall = recall_score(
-        prep.y_test,
-        predicted_classes,
-        average="weighted"
-    )
-
-    f1 = f1_score(
-        prep.y_test,
-        predicted_classes,
-        average="weighted"
-    )
-
-    print(f"\nAccuracy : {accuracy * 100:.2f}%")
-    print(f"Precision: {precision * 100:.2f}%")
-    print(f"Recall   : {recall * 100:.2f}%")
-    print(f"F1 Score : {f1 * 100:.2f}%")
-
-    print("\n==============================")
-    print("Sample Predictions")
-    print("==============================")
-
-    encoder = prep.encoder
-
-    for i in range(min(10, len(predicted_classes))):
-
-        actual = encoder.inverse_transform(
-            [prep.y_test[i]]
-        )[0]
-
-        predicted = encoder.inverse_transform(
-            [predicted_classes[i]]
-        )[0]
-
-        print(f"Sample {i+1}")
-        print("Actual    :", actual)
-        print("Predicted :", predicted)
-        print("-------------------------")
-
-    # ==========================
-    # Confusion Matrix
-    # ==========================
-
-    cm = confusion_matrix(
-        prep.y_test,
-        predicted_classes
-    )
-
-    print("\n==============================")
-    print("Confusion Matrix")
-    print("==============================")
-    print(cm)
-
-    # ==========================
-    # Classification Report
-    # ==========================
-
-    print("\n==============================")
-    print("Classification Report")
-    print("==============================")
-
-    print(
-        classification_report(
-            prep.y_test,
-            predicted_classes,
-            target_names=prep.encoder.classes_
-        )
-    )
 
 
 if __name__ == "__main__":
