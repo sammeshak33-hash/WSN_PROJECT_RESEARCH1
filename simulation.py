@@ -102,9 +102,11 @@ class Simulation:
         packet.generate_packets()
 
         # Your new PacketTransmission uses attack_type
-        packet.transmit_packets(self.nodes)
+        packet.transmit_packets()
 
         packet.display_statistics()
+
+        packet.display_sample_nodes()
 
         self.packet_model = packet
 

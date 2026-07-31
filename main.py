@@ -25,6 +25,8 @@ from sklearn.metrics import (
     confusion_matrix,
     classification_report,
 )
+import os
+import pandas as pd
 
 def main():
 
@@ -83,6 +85,13 @@ def main():
         prep.X_test.shape[1],
         1
     )
+
+    # ==========================================
+    # Create Output Directories
+    # ==========================================
+
+    os.makedirs("Models", exist_ok=True)
+    os.makedirs("Results", exist_ok=True)
 
 
     # ----------------------------
@@ -164,18 +173,51 @@ def main():
     print("PRCNN Model Training Started")
     print("==============================")
 
+    EPOCHS = 50
+    BATCH_SIZE = 32
+
     history = model.fit(
+
         prep.X_train,
         prep.y_train,
-        validation_split=0.20,
-        epochs=20,
-        batch_size=16,
+
+        validation_data=(
+            prep.X_test,
+            prep.y_test
+        ),
+
+        epochs=EPOCHS,
+
+        batch_size=BATCH_SIZE,
+
         verbose=1
+
     )
+    
 
     print("\n==============================")
     print("Training Completed Successfully")
     print("==============================")
+    # ==========================================
+    # Save Model
+    # ==========================================
+
+    model.save("Models/prcnn_large_dataset.keras")
+
+    print("\nModel Saved Successfully")
+
+    # ==========================================
+    # Save Training History
+    # ==========================================
+
+    history_df = pd.DataFrame(history.history)
+
+    history_df.to_csv(
+        "Results/training_history.csv",
+        index=False
+    )
+
+    print("Training History Saved Successfully")
 
     # ==========================
     # PRCNN Model Testing
@@ -193,6 +235,28 @@ def main():
 
     print("\nTest Loss :", round(test_loss, 4))
     print("Test Accuracy :", round(test_accuracy * 100, 2), "%")
+
+    print("\n==============================")
+    print("FINAL RESULTS")
+    print("==============================")
+
+    print(
+        "Training Accuracy :",
+        round(history.history["accuracy"][-1] * 100, 2),
+        "%"
+    )
+
+    print(
+        "Validation Accuracy :",
+        round(history.history["val_accuracy"][-1] * 100, 2),
+        "%"
+    )
+
+    print(
+        "Testing Accuracy :",
+        round(test_accuracy * 100, 2),
+        "%"
+    )
 
     # ==========================
     # Predict Attack Classes

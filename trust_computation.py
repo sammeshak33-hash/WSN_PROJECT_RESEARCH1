@@ -24,7 +24,21 @@ class TrustComputation:
 
         for node in self.nodes:
 
-            node.direct_trust = node.packet_delivery_ratio
+            total_packets = (
+                node.forwarded_packets +
+                node.packet_dropped
+            )
+
+            if total_packets > 0:
+
+                node.direct_trust = (
+                    node.forwarded_packets /
+                    total_packets
+                )
+
+            else:
+
+                node.direct_trust = 0.0
 
     # ------------------------------------
     # Indirect Trust
@@ -45,13 +59,9 @@ class TrustComputation:
             if len(neighbour_trust) > 0:
 
                 node.indirect_trust = (
-
                     sum(neighbour_trust)
-
                     /
-
                     len(neighbour_trust)
-
                 )
 
             else:
@@ -71,11 +81,13 @@ class TrustComputation:
 
             node.total_trust = (
 
-                DIRECT_WEIGHT * node.direct_trust
+                DIRECT_WEIGHT *
+                node.direct_trust
 
                 +
 
-                INDIRECT_WEIGHT * node.indirect_trust
+                INDIRECT_WEIGHT *
+                node.indirect_trust
 
             )
 
@@ -107,7 +119,7 @@ class TrustComputation:
         return trusted_nodes, malicious_nodes
 
     # ------------------------------------
-    # Display Functions
+    # Display Direct Trust
     # ------------------------------------
 
     def display_direct_trust(self):
@@ -117,12 +129,13 @@ class TrustComputation:
         for node in self.nodes[:10]:
 
             print(
-
-                f"Node {node.id} : "
-
+                f"Node {node.id:2d} : "
                 f"{node.direct_trust:.3f}"
-
             )
+
+    # ------------------------------------
+    # Display Indirect Trust
+    # ------------------------------------
 
     def display_indirect_trust(self):
 
@@ -131,12 +144,13 @@ class TrustComputation:
         for node in self.nodes[:10]:
 
             print(
-
-                f"Node {node.id} : "
-
+                f"Node {node.id:2d} : "
                 f"{node.indirect_trust:.3f}"
-
             )
+
+    # ------------------------------------
+    # Display Overall Trust
+    # ------------------------------------
 
     def display_overall_trust(self):
 
@@ -145,12 +159,13 @@ class TrustComputation:
         for node in self.nodes[:10]:
 
             print(
-
-                f"Node {node.id} : "
-
+                f"Node {node.id:2d} : "
                 f"{node.total_trust:.3f}"
-
             )
+
+    # ------------------------------------
+    # Display Classification
+    # ------------------------------------
 
     def display_node_classification(
         self,
@@ -160,8 +175,14 @@ class TrustComputation:
 
         print("\n========== Node Classification ==========\n")
 
-        print("Trusted Nodes :", trusted_nodes)
+        print(
+            f"Trusted Nodes ({len(trusted_nodes)}):"
+        )
+        print(trusted_nodes)
 
         print()
 
-        print("Malicious Nodes :", malicious_nodes)           
+        print(
+            f"Malicious Nodes ({len(malicious_nodes)}):"
+        )
+        print(malicious_nodes)          
