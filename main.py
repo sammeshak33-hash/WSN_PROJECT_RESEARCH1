@@ -8,14 +8,19 @@ from energy_model import (
 
 from config import PACKET_SIZE
 
-from prcnn_model import PRCNN
 from simulation import Simulation
 
 from dataset_generator import DatasetGenerator
 
 from large_dataset_validation import LargeDatasetValidation
+
 from dataset_visualization import DatasetVisualization
+
 from preprocessing import Preprocessing
+
+from hyperparameter_tuning import HyperparameterTuner
+
+from training_visualization import TrainingVisualization
 
 from sklearn.metrics import (
     accuracy_score,
@@ -25,9 +30,10 @@ from sklearn.metrics import (
     confusion_matrix,
     classification_report,
 )
+
 import os
 import pandas as pd
-from hyperparameter_tuning import HyperparameterTuner
+import tensorflow as tf
 
 def main():
 
@@ -154,6 +160,109 @@ def main():
     print("====================================")
 
     print(best_configuration)
+
+    print("\n====================================")
+    print("GENERATING TRAINING GRAPHS")
+    print("====================================")
+
+    visual = TrainingVisualization(
+        "Results/training_history.csv"
+    )
+
+    visual.training_accuracy()
+
+    visual.validation_accuracy()
+
+    visual.training_loss()
+
+    visual.validation_loss()
+
+    visual.combined_accuracy()
+
+    visual.combined_loss()
+
+    print("\nAll Training Graphs Generated Successfully")
+
+    # ==========================================
+    # Load Best Model
+    # ==========================================
+
+    print("\n====================================")
+    print("MODEL EVALUATION")
+    print("====================================")
+
+    model = tf.keras.models.load_model(
+        "Models/prcnn_large_dataset.keras"
+    )
+
+    # Predict
+
+    predictions = model.predict(prep.X_test)
+
+    predicted_classes = predictions.argmax(axis=1)
+
+    # ==========================================
+    # Performance Metrics
+    # ==========================================
+
+    accuracy = accuracy_score(
+        prep.y_test,
+        predicted_classes
+    )
+
+    precision = precision_score(
+        prep.y_test,
+        predicted_classes,
+        average="weighted"
+    )
+
+    recall = recall_score(
+        prep.y_test,
+        predicted_classes,
+        average="weighted"
+    )
+
+    f1 = f1_score(
+        prep.y_test,
+        predicted_classes,
+        average="weighted"
+    )
+
+    print(f"\nAccuracy : {accuracy*100:.2f}%")
+    print(f"Precision: {precision*100:.2f}%")
+    print(f"Recall   : {recall*100:.2f}%")
+    print(f"F1 Score : {f1*100:.2f}%")
+
+    # ==========================================
+    # Confusion Matrix
+    # ==========================================
+
+    cm = confusion_matrix(
+        prep.y_test,
+        predicted_classes
+    )
+
+    print("\n====================================")
+    print("CONFUSION MATRIX")
+    print("====================================")
+
+    print(cm)
+
+    # ==========================================
+    # Classification Report
+    # ==========================================
+
+    print("\n====================================")
+    print("CLASSIFICATION REPORT")
+    print("====================================")
+
+    print(
+        classification_report(
+            prep.y_test,
+            predicted_classes,
+            target_names=prep.encoder.classes_
+        )
+    )
 
    
 

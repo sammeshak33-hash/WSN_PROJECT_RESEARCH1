@@ -29,8 +29,12 @@ class HyperparameterTuner:
             1
         )
 
-        os.makedirs("Results", exist_ok=True)
         os.makedirs("Models", exist_ok=True)
+        os.makedirs("Results", exist_ok=True)
+
+        # ==========================================
+        # Hyperparameter Search
+        # ==========================================
 
         for epoch in self.EPOCHS:
 
@@ -46,10 +50,7 @@ class HyperparameterTuner:
                     print(f"Learning Rate : {lr}")
                     print("====================================")
 
-                    # -----------------------------
                     # Build Fresh PRCNN
-                    # -----------------------------
-
                     prcnn = PRCNN(
                         input_shape=input_shape,
                         num_classes=4
@@ -67,55 +68,33 @@ class HyperparameterTuner:
                         metrics=["accuracy"]
                     )
 
-                    # -----------------------------
                     # Training
-                    # -----------------------------
-
                     start_time = time.time()
 
                     history = model.fit(
-
                         prep.X_train,
-
                         prep.y_train,
-
                         validation_data=(
-
                             prep.X_test,
-
                             prep.y_test
-
                         ),
-
                         epochs=epoch,
-
                         batch_size=batch,
-
                         verbose=0
-
                     )
 
-                    end_time = time.time()
+                    training_time = time.time() - start_time
 
-                    training_time = end_time - start_time
-
-                    # -----------------------------
                     # Save Individual Model
-                    # -----------------------------
-
                     model_name = (
-                        f"Models/"
-                        f"prcnn_E{epoch}"
+                        f"Models/prcnn_E{epoch}"
                         f"_B{batch}"
                         f"_LR{lr}.keras"
                     )
 
                     model.save(model_name)
 
-                    # -----------------------------
                     # Store Results
-                    # -----------------------------
-
                     self.results.append({
 
                         "Epochs": epoch,
@@ -150,28 +129,24 @@ class HyperparameterTuner:
                         "%"
                     )
 
-        # =====================================
-        # Save CSV
-        # =====================================
+        # ==========================================
+        # Save Hyperparameter Results
+        # ==========================================
 
         df = pd.DataFrame(self.results)
 
         df.to_csv(
-
             "Results/hyperparameter_results.csv",
-
             index=False
-
         )
 
         print("\n====================================")
         print("Hyperparameter Results Saved")
-        print("Location : Results/hyperparameter_results.csv")
         print("====================================")
 
-        # =====================================
+        # ==========================================
         # Find Best Configuration
-        # =====================================
+        # ==========================================
 
         best = df.loc[
             df["Validation Accuracy"].idxmax()
@@ -180,9 +155,77 @@ class HyperparameterTuner:
         print("\n====================================")
         print("BEST CONFIGURATION")
         print("====================================")
-
         print(best)
 
-        print("\n====================================")
+        # ==========================================
+        # Retrain Best Configuration
+        # ==========================================
 
-        return best 
+        best_epoch = int(best["Epochs"])
+        best_batch = int(best["Batch Size"])
+        best_lr = float(best["Learning Rate"])
+
+        print("\nRetraining Best PRCNN Configuration...")
+
+        best_prcnn = PRCNN(
+            input_shape=input_shape,
+            num_classes=4
+        )
+
+        best_model = best_prcnn.build_model()
+
+        best_optimizer = tf.keras.optimizers.Adam(
+            learning_rate=best_lr
+        )
+
+        best_model.compile(
+            optimizer=best_optimizer,
+            loss="sparse_categorical_crossentropy",
+            metrics=["accuracy"]
+        )
+
+        best_history = best_model.fit(
+            prep.X_train,
+            prep.y_train,
+            validation_data=(
+                prep.X_test,
+                prep.y_test
+            ),
+            epochs=best_epoch,
+            batch_size=best_batch,
+            verbose=1
+        )
+
+        # ==========================================
+        # Save Best Model
+        # ==========================================
+
+        best_model.save(
+            "Models/prcnn_large_dataset.keras"
+        )
+
+        print("\nBest PRCNN Model Saved Successfully")
+
+        # ==========================================
+        # Save Training History
+        # ==========================================
+
+        history_df = pd.DataFrame(
+            best_history.history
+        )
+
+        history_df.to_csv(
+            "Results/training_history.csv",
+            index=False
+        )
+
+        print("Training History Saved Successfully")
+
+        print("\n====================================")
+        print("Files Generated")
+        print("====================================")
+        print("Results/hyperparameter_results.csv")
+        print("Results/training_history.csv")
+        print("Models/prcnn_large_dataset.keras")
+
+        return best
