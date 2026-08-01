@@ -22,17 +22,9 @@ from hyperparameter_tuning import HyperparameterTuner
 
 from training_visualization import TrainingVisualization
 
-from sklearn.metrics import (
-    accuracy_score,
-    precision_score,
-    recall_score,
-    f1_score,
-    confusion_matrix,
-    classification_report,
-)
+from evaluation_framework import EvaluationFramework
 
 import os
-import pandas as pd
 import tensorflow as tf
 
 def main():
@@ -184,8 +176,10 @@ def main():
     print("\nAll Training Graphs Generated Successfully")
 
     # ==========================================
-    # Load Best Model
+    # MODEL EVALUATION
     # ==========================================
+
+    import tensorflow as tf
 
     print("\n====================================")
     print("MODEL EVALUATION")
@@ -195,74 +189,24 @@ def main():
         "Models/prcnn_large_dataset.keras"
     )
 
-    # Predict
+    evaluator = EvaluationFramework()
 
-    predictions = model.predict(prep.X_test)
+    results = evaluator.evaluate(
 
-    predicted_classes = predictions.argmax(axis=1)
+        model,
 
-    # ==========================================
-    # Performance Metrics
-    # ==========================================
+        prep.X_test,
 
-    accuracy = accuracy_score(
-        prep.y_test,
-        predicted_classes
-    )
+        prep.y_test
 
-    precision = precision_score(
-        prep.y_test,
-        predicted_classes,
-        average="weighted"
-    )
-
-    recall = recall_score(
-        prep.y_test,
-        predicted_classes,
-        average="weighted"
-    )
-
-    f1 = f1_score(
-        prep.y_test,
-        predicted_classes,
-        average="weighted"
-    )
-
-    print(f"\nAccuracy : {accuracy*100:.2f}%")
-    print(f"Precision: {precision*100:.2f}%")
-    print(f"Recall   : {recall*100:.2f}%")
-    print(f"F1 Score : {f1*100:.2f}%")
-
-    # ==========================================
-    # Confusion Matrix
-    # ==========================================
-
-    cm = confusion_matrix(
-        prep.y_test,
-        predicted_classes
     )
 
     print("\n====================================")
-    print("CONFUSION MATRIX")
+    print("FINAL RESULTS")
     print("====================================")
 
-    print(cm)
+    print(results)
 
-    # ==========================================
-    # Classification Report
-    # ==========================================
-
-    print("\n====================================")
-    print("CLASSIFICATION REPORT")
-    print("====================================")
-
-    print(
-        classification_report(
-            prep.y_test,
-            predicted_classes,
-            target_names=prep.encoder.classes_
-        )
-    )
 
    
 
