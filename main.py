@@ -24,6 +24,8 @@ from training_visualization import TrainingVisualization
 
 from evaluation_framework import EvaluationFramework
 
+from cnn_model import CNNModel
+
 import os
 import tensorflow as tf
 
@@ -174,6 +176,68 @@ def main():
     visual.combined_loss()
 
     print("\nAll Training Graphs Generated Successfully")
+
+    # ==========================================
+    # CNN BASELINE MODEL
+    # ==========================================
+
+    print("\n====================================")
+    print("CNN BASELINE MODEL")
+    print("====================================")
+
+    cnn = CNNModel(
+        input_shape=prep.X_train.shape[1:],
+        num_classes=len(set(prep.y_train))
+    )
+
+    cnn_model = cnn.build_model()
+
+    cnn_model.summary()
+
+    print("\nCNN Training Started")
+
+    cnn_history = cnn_model.fit(
+
+        prep.X_train,
+
+        prep.y_train,
+
+        validation_data=(
+            prep.X_test,
+            prep.y_test
+        ),
+
+        epochs=50,
+
+        batch_size=32,
+
+        verbose=1
+
+    )
+
+    print("\nCNN Training Completed")
+
+    print("\n====================================")
+    print("CNN MODEL EVALUATION")
+    print("====================================")
+
+    evaluator = EvaluationFramework()
+
+    cnn_results = evaluator.evaluate(
+
+        cnn_model,
+
+        prep.X_test,
+
+        prep.y_test
+
+    )
+
+    print("\n====================================")
+    print("CNN RESULTS")
+    print("====================================")
+
+    print(cnn_results)
 
     # ==========================================
     # MODEL EVALUATION
