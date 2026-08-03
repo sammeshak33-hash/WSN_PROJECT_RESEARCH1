@@ -28,6 +28,8 @@ from cnn_model import CNNModel
 
 from rnn_model import RNNModel
 
+from lstm_model import LSTMModel
+
 import os
 import tensorflow as tf
 
@@ -219,6 +221,23 @@ def main():
 
     print("\nCNN Training Completed")
 
+    cnn_model.save(
+        "Models/cnn_model.keras"
+    )
+
+    print("CNN Model Saved Successfully")
+
+    import pandas as pd
+
+    pd.DataFrame(
+        cnn_history.history
+    ).to_csv(
+        "Results/cnn_training_history.csv",
+        index=False
+    )
+
+    print("CNN Training History Saved Successfully")
+
     print("\n====================================")
     print("CNN MODEL EVALUATION")
     print("====================================")
@@ -329,14 +348,100 @@ def main():
 
     print(rnn_results)
 
+   # ==========================================
+    # LSTM BASELINE MODEL
     # ==========================================
-    # MODEL EVALUATION
-    # ==========================================
-
-    import tensorflow as tf
 
     print("\n====================================")
-    print("MODEL EVALUATION")
+    print("LSTM BASELINE MODEL")
+    print("====================================")
+
+    lstm = LSTMModel(
+        input_shape=prep.X_train.shape[1:],
+        num_classes=len(set(prep.y_train))
+    )
+
+    lstm_model = lstm.build_model()
+
+    print("\nTraining LSTM Model...\n")
+
+    lstm_history = lstm_model.fit(
+
+        prep.X_train,
+
+        prep.y_train,
+
+        validation_data=(
+
+            prep.X_test,
+
+            prep.y_test
+
+        ),
+
+        epochs=50,
+
+        batch_size=32,
+
+        verbose=1
+
+    )
+
+    print("\nLSTM Training Completed")
+
+    # ==========================================
+    # Save LSTM Model
+    # ==========================================
+
+    lstm_model.save(
+        "Models/lstm_model.keras"
+    )
+
+    print("LSTM Model Saved Successfully")
+
+    # ==========================================
+    # Save LSTM Training History
+    # ==========================================
+
+    import pandas as pd
+
+    pd.DataFrame(
+        lstm_history.history
+    ).to_csv(
+        "Results/lstm_training_history.csv",
+        index=False
+    )
+
+    print("LSTM Training History Saved Successfully")
+
+    # ==========================================
+    # Evaluate LSTM
+    # ==========================================
+
+    evaluator = EvaluationFramework()
+
+    lstm_results = evaluator.evaluate(
+
+        lstm_model,
+
+        prep.X_test,
+
+        prep.y_test
+
+    )
+
+    print("\n====================================")
+    print("LSTM RESULTS")
+    print("====================================")
+
+    print(lstm_results)
+
+    # ==========================================
+    # PRCNN FINAL EVALUATION
+    # ==========================================
+
+    print("\n====================================")
+    print("PRCNN FINAL EVALUATION")
     print("====================================")
 
     model = tf.keras.models.load_model(
@@ -356,7 +461,7 @@ def main():
     )
 
     print("\n====================================")
-    print("FINAL RESULTS")
+    print("PRCNN RESULTS")
     print("====================================")
 
     print(results)
