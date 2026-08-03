@@ -26,6 +26,8 @@ from evaluation_framework import EvaluationFramework
 
 from cnn_model import CNNModel
 
+from rnn_model import RNNModel
+
 import os
 import tensorflow as tf
 
@@ -238,6 +240,94 @@ def main():
     print("====================================")
 
     print(cnn_results)
+
+    # ==========================================
+    # RNN BASELINE MODEL
+    # ==========================================
+
+    print("\n====================================")
+    print("RNN BASELINE MODEL")
+    print("====================================")
+
+    rnn = RNNModel(
+        input_shape=prep.X_train.shape[1:],
+        num_classes=len(set(prep.y_train))
+    )
+
+    rnn_model = rnn.build_model()
+
+    print("\nTraining RNN Model...\n")
+
+    history = rnn_model.fit(
+
+        prep.X_train,
+
+        prep.y_train,
+
+        validation_data=(
+
+            prep.X_test,
+
+            prep.y_test
+
+        ),
+
+        epochs=50,
+
+        batch_size=32,
+
+        verbose=1
+
+    )
+
+    print("\nRNN Training Completed")
+
+    # ==========================================
+    # Save Model
+    # ==========================================
+
+    rnn_model.save(
+        "Models/rnn_model.keras"
+    )
+
+    print("RNN Model Saved Successfully")
+
+    # ==========================================
+    # Save Training History
+    # ==========================================
+
+    import pandas as pd
+
+    pd.DataFrame(
+        history.history
+    ).to_csv(
+        "Results/rnn_training_history.csv",
+        index=False
+    )
+
+    print("Training History Saved")
+
+    # ==========================================
+    # Evaluate
+    # ==========================================
+
+    evaluator = EvaluationFramework()
+
+    rnn_results = evaluator.evaluate(
+
+        rnn_model,
+
+        prep.X_test,
+
+        prep.y_test
+
+    )
+
+    print("\n====================================")
+    print("RNN RESULTS")
+    print("====================================")
+
+    print(rnn_results)
 
     # ==========================================
     # MODEL EVALUATION
