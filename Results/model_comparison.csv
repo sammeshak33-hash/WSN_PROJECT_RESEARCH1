@@ -1,0 +1,5 @@
+Model,Accuracy,Precision,Recall,F1,Training Time,Testing Time
+CNN,1.0,1.0,1.0,1.0,50,0.275
+RNN,1.0,1.0,1.0,1.0,50,1.5505
+LSTM,1.0,1.0,1.0,1.0,50,0.7528
+PRCNN,1.0,1.0,1.0,1.0,11,0.5958

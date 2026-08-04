@@ -30,6 +30,8 @@ from rnn_model import RNNModel
 
 from lstm_model import LSTMModel
 
+from comparison_framework import ComparisonFramework
+
 import os
 import tensorflow as tf
 
@@ -97,6 +99,7 @@ def main():
 
     os.makedirs("Models", exist_ok=True)
     os.makedirs("Results", exist_ok=True)
+    compare = ComparisonFramework()
 
 
     # ----------------------------
@@ -260,6 +263,24 @@ def main():
 
     print(cnn_results)
 
+    compare.add_result(
+
+        "CNN",
+
+        cnn_results["Accuracy"],
+
+        cnn_results["Precision"],
+
+        cnn_results["Recall"],
+
+        cnn_results["F1"],
+
+        50,
+
+        cnn_results["Testing Time"]
+
+    )
+
     # ==========================================
     # RNN BASELINE MODEL
     # ==========================================
@@ -347,6 +368,24 @@ def main():
     print("====================================")
 
     print(rnn_results)
+
+    compare.add_result(
+
+        "RNN",
+
+        rnn_results["Accuracy"],
+
+        rnn_results["Precision"],
+
+        rnn_results["Recall"],
+
+        rnn_results["F1"],
+
+        50,
+
+        rnn_results["Testing Time"]
+
+    )
 
    # ==========================================
     # LSTM BASELINE MODEL
@@ -436,6 +475,24 @@ def main():
 
     print(lstm_results)
 
+    compare.add_result(
+
+        "LSTM",
+
+        lstm_results["Accuracy"],
+
+        lstm_results["Precision"],
+
+        lstm_results["Recall"],
+
+        lstm_results["F1"],
+
+        50,
+
+        lstm_results["Testing Time"]
+
+    )
+
     # ==========================================
     # PRCNN FINAL EVALUATION
     # ==========================================
@@ -465,6 +522,40 @@ def main():
     print("====================================")
 
     print(results)
+
+    compare.add_result(
+
+        "PRCNN",
+
+        results["Accuracy"],
+
+        results["Precision"],
+
+        results["Recall"],
+
+        results["F1"],
+
+        int(best_configuration["Training Time (s)"]),
+
+        results["Testing Time"]
+
+    )
+
+    print("\n====================================")
+    print("GENERATING COMPARISON REPORT")
+    print("====================================")
+
+    df = compare.create_table()
+
+    compare.accuracy_graph()
+
+    compare.f1_graph()
+
+    compare.training_graph()
+
+    compare.testing_graph()
+
+    print("\nComparison Report Generated Successfully")
 
 
    

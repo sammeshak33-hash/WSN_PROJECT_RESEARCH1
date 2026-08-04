@@ -122,20 +122,22 @@ class EvaluationFramework:
 
         results = {
 
-            "Accuracy": accuracy,
+        "Accuracy": accuracy,
 
-            "Precision": precision,
+        "Precision": precision,
 
-            "Recall": recall,
+        "Recall": recall,
 
-            "F1 Score": f1,
+        "F1": f1,
 
-            "Testing Time (s)": round(
-                testing_time,
-                4
-            )
+        "Testing Time": round(
+            testing_time,
+            4
+        )
 
-        }
+    }
+
+        
 
         print("\n==============================")
         print("EVALUATION RESULTS")
